@@ -1,14 +1,96 @@
 ﻿@page "/"
+@using MoneyPool.Blazor.Models 
 
 <PageTitle>Money Pool</PageTitle>
 
 <h3>Enter the pool participants</h3>
 
 <div class="row">
-<div class="col-md-3">
-    <input placeholder="Enter participant's name." />
-</div>
+
+    <div class="col-md-3">
+        <input type="date" @bind-value="_startingDate" placeholder="Enter participant's name." />
+        <input type="number" @bind-value="_monthlyAmount" placeholder="Enter monthly amount of the pool." />
+
+        <button style="padding:3px; margin:3px;" class="btn-primary" @onclick="D">Submit</button>
+        <button style="padding:3px; margin:3px;" class="btn-primary" @onclick="@Shuffle">Shuffle</button>
+    </div>
+
+
 </div>
 
+<div class="row">
+
+    <div class="col-md-3">
+        <input type="text" @bind-value="_participantName" placeholder="Enter participant's name." />
+
+        <button style="padding:3px; margin:3px;" class="btn-primary" @onclick="AddParticipant">Submit</button>
+    </div>
+
+    <div class="col-3">
+        <h2>Participants: (@_participants.Count)</h2>
+        <ul>
+            @foreach( Participant item in _participants)
+            {
+                <li>@item.Name</li>
+            }
+
+        </ul>
+
+        
+    </div>
+
+    @if(_pool != null)
+    {
+    <div class="col-3">
+        <h2>Final Results (@_pool.TotalAmount AED)</h2>
+        <ul>
+            @foreach (Round item in _pool.RoundsList)
+            {
+
+                <li>
+                    @item.Participant.Name on @item.Date.ToString("yyyy MMM");
+                </li>
+
+            }
+        </ul>
+
+    </div>
+    }
+
+   
+
+</div>
+
+
+@code
+{
+
+    private int _monthlyAmount;
+    private DateTime _startingDate;
+    private Pool _pool;
+
+    private string _participantName;
+    private List<Participant> _participants = new List<Participant>();
+
+    private void AddParticipant()
+    {
+        Participant participant = new Participant(_participantName);
+        _participants.Add(participant);
+        _participantName = "";
+    }
+
+    private void D()
+    {
+        _pool = new Pool(_participants, _monthlyAmount, _startingDate);
+        _pool.CalculateRounds();
+
+    }
+
+    private void Shuffle()
+    {
+        _pool.CalculateRounds();
+    }
+
+    }
 
 

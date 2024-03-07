@@ -1,45 +1,50 @@
-﻿
-public class Pool
+﻿using System.Text.Json;
+
+namespace MoneyPool.Blazor.Models
 {
-    public List<Participants> ParticipantsList { get; set; }
-    public List<Rounds> RoundsList { get; set; }
-
-    public int MonthlyAmount { get; set; }
-
-    public Pool(List<Participants> participantsList, int monthlyAmount)
+    public class Pool
     {
-        ParticipantsList = participantsList;
-        MonthlyAmount = monthlyAmount;
-        RoundsList = new List<Rounds>();
-    }
+        public List<Participant> ParticipantsList { get; set; }
+        public List<Round> RoundsList { get; set; }
 
-    public void CalculateRounds()
-    {
-        Random random = new Random();
-        DateTime currentDate = new DateTime(2024, 2, 1);
+        public int MonthlyAmount { get; set; }
+        public int TotalAmount { get; set; }
 
-        List<Participants> shuffledParticipants = ParticipantsList.OrderBy(_ => random.Next()).ToList();
+        public DateTime StartingDate {  get; set; }
 
-        foreach (var participant in shuffledParticipants)
+        public Pool(List<Participant> participantsList, int monthlyAmount, DateTime startingDate)
         {
-            RoundsList.Add(new Rounds { Date = currentDate, Participant = participant });
-            currentDate = currentDate.AddMonths(1);
+            ParticipantsList = participantsList;
+            RoundsList = new List<Round>();
+            MonthlyAmount = monthlyAmount;
+            TotalAmount = ParticipantsList.Count * MonthlyAmount;
+            StartingDate = startingDate;
         }
-    }
 
-    public void PrintResults()
-    {
-        Console.WriteLine($"Total amount for each participant: AED{ParticipantsList.Count * MonthlyAmount}");
-        Console.WriteLine("Participants ordered by month (rounds): ");
-
-        foreach (var round in RoundsList)
+        public void CalculateRounds()
         {
-            Console.WriteLine($"{round.Date:MMM d}: {round.Participant.Name}");
+            Random random = new Random();
+            RoundsList.Clear();
+
+
+            List<Participant> shuffledParticipants = ParticipantsList.OrderBy(_ => random.Next()).ToList();
+
+            foreach (var participant in shuffledParticipants)
+            {
+                RoundsList.Add(new Round { Date = StartingDate, Participant = participant });
+                StartingDate = StartingDate.AddMonths(1);
+                
+            }
         }
+
+
+
+        public string Serialize()
+        {
+            return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
+        }
+
+
     }
 
-    public string Serialize()
-    {
-        return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
-    }
 }
